@@ -1,9 +1,12 @@
 # Backup-Script
+
+![backup-script](https://user-images.githubusercontent.com/8832013/84669169-3bce8200-af2d-11ea-850c-d40e2521e6d5.png)
+
 A Bash script to generate a tar.gz backup file of a folder, with an option to automatically upload the backup file to a cloud service using [rclone](https://github.com/rclone/rclone), and remove local copy afterwards.
 
 List of cloud/storage providers currently supported by rclone can be found [here](https://github.com/rclone/rclone#storage-providers).
 
-## Dependencies
+## Requirements
 * `tar`
 * `rclone` (needs to be configured)
 
@@ -16,7 +19,7 @@ Usage: backup [-n <name>] [-s <path>] [-u <path>] [-r] <path-to-backup>
 Options:
   -n <name>  Sets the tar.gz file name [default: "backup"]
   -s <path>  Path to which the generated backup file will be saved to [default: current working directory]
-  -u <path>  Rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
+  -u <path>  rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
   -r         Remove local copy of backup file after it's been uploaded
 
 Commands:
@@ -27,10 +30,10 @@ Examples:
   backup -n "important-stuff-backup" -s "/home/user/backups" -u "GDrive:/Backups" -r "/home/user/important_stuff/"
 ```
 
-## Todo
+## To Do
 * Add an option to restore a backup.
-* Add option to customize date format on backup's file name.
-* Add option to exclude files from backup using `tar`'s `--exclude=` argument.
+* Add an option to customize date format on backup's file name.
+* Add an option to exclude files from backup using `tar`'s `--exclude=` argument.
 * Add '-v' option to show `tar` and `rclone` outputs.
 * Add '-l' option to save a log file.
 * Add a scheduled backups setup guide using `cron` and `systemd` to *README.md*.
