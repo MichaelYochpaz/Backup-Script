@@ -1,0 +1,156 @@
+#!/bin/bash
+## ------------------------------------
+##  Made By: Michael Yochpaz (C) 2020
+##  https://github.com/MichaelYochpaz/Backup-Script
+##  Version: 1.0
+##  License: GPLv3
+## ------------------------------------
+## -------------- Usage ---------------
+##  The script generates a tar.gz backup file of a folder, and according to user's given arguments,
+##  can upload it to a cloud service using rclone and remove the local copy.
+##
+## ------------ Requirments -----------
+##  - In order to use the upload feature, rclone must be installed and have at least one cloud service setup in config.
+## ------------------------------------
+##
+##  Usage: backup [-n <name>] [-s <path>] [-u <path>] [-r] <path-to-backup>
+##
+##  Options:
+##    -n <name>  Sets the tar.gz file name [default: backup]
+##    -s <path>  The path to which the generated backup file will be saved to [default: current folder]
+##    -u <path>  The rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
+##    -r         Remove local copy of backup file after it's been uploaded
+##
+##  Commands:
+##    -h         Displays this help and exists.
+##
+##  Examples:
+##    backup "/home/user/important_stuff"
+##    backup -n "important-stuff-backup" -s "/home/user/backups" -u "GDrive:/Backups" -r "/home/user/important_stuff/"
+##
+## --------- Configuration ------------
+BACKUP_NAME="backup" # backup file name. date will be added to file name after this string
+BACKUP_FOLDER="" # folder to backup (full path)
+SAVE_FOLDER="$PWD" # folder to save backup file to (full path)
+RCLONE_FOLDER="" # path to rclone folder to which file will be uploaded to. leave empty to skip upload
+REMOVE_LOCAL=false # remove local backup file after upload
+## ------------------------------------
+
+usage() { echo "Usage: $(basename $0) [-h] [-n <name>] [-s <path>] [-u <path>] [-r] <path>
+Use $(basename $0) -h for more info."; exit 1; }
+
+ERROR=false # sets to true when there's an error for final exit code
+NC='\033[0m' # ANSI - no color
+CG='\033[0;32m' # ANSI - green
+CN='\033[1;31m' # ANSI - red
+
+while getopts ":n:s:u:rh" arg; do
+  case $arg in
+    n)
+      BACKUP_NAME=${OPTARG}
+      ;;
+    s)
+      SAVE_FOLDER=${OPTARG}
+      ;;
+    u)
+      RCLONE_FOLDER=${OPTARG}
+      ;;
+    r)
+      REMOVE_LOCAL=true
+      ;;
+    h)
+      echo " Usage: $(basename $0) [-n <name>] [-s <path>] [-u <path>] [-r] <path-to-backup>
+ Options:
+   -n <name>  Sets the tar.gz file name (date is added) [default: backup]
+   -s <path>  The path to which the generated backup file will be saved to [default: current working directory]
+   -u <path>  The rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
+   -r         Remove local copy of backup file after it's been uploaded
+
+ Commands:
+   -h         Displays this help and exists.
+
+ Examples:
+   $(basename $0) \"/home/user/important_stuff\"
+   $(basename $0) -n \"important-stuff-backup\" -s \"/home/user/backups\" -u \"GDrive:/Backups\" -r \"/home/user/important_stuff\""
+      exit 0
+      ;;
+    *)
+      usage
+      ;;
+  esac
+done
+
+if [[ -d ${@:$OPTIND:1} ]]; then BACKUP_FOLDER=${@:$OPTIND:1}; fi # positional argument - the folder that's going to be backed-up
+
+if [ -z $BACKUP_FOLDER ]; then usage; fi # if no backup folder was chosen
+
+if [ ! -d $BACKUP_FOLDER ]; then # if BACKUP_FOLDER path doesn't exist
+  echo -e "${CN}Folder $BACKUP_FOLDER not found.${NC}"
+  exit 1
+fi
+
+if [ ! -d $SAVE_FOLDER ]; then # if SAVE_FOLDER path doesn't exist
+  echo -e "${CN}Folder $SAVE_FOLDER not found.${NC}"
+  exit 1
+fi
+
+if [ "${SAVE_FOLDER: -1}" = "/" ]; then SAVE_FOLDER=${SAVE_FOLDER%?}; fi # if SAVE_FOLDER path ends with a '/', remove it
+
+if [ "$REMOVE_LOCAL" = true ] && [ -z $RCLONE_FOLDER ]; then # if REMOVE_LOCAL is set to true, but rclone upload is not used.
+  read -p "WARNING: '-r' argument to remove local backup file was used,
+  but no rclone path to upload backup flie to beforehand is set.
+  This will result in generating a backup file and deleting it after without it being uploaded anywhere.
+  Would you like to continue (Y/n) ?" -n 1 -r
+  echo
+
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then exit 0; fi
+fi
+
+echo "$(date +"%Y/%m/%d %T") Generating tar.gz file"
+FILENAME="${BACKUP_NAME}-$(date +%FT%H%M).tar.gz"
+tar -czf "$SAVE_FOLDER/$FILENAME" -C "$BACKUP_FOLDER/.." "$(basename "$BACKUP_FOLDER")"
+
+if [ "$?" = 0 ]; then # tar commmand ran successfully (exit code = 0)
+  echo -e "$(date +"%Y/%m/%d %T") ${CG}Backup file generated successfully and saved to $SAVE_FOLDER/$FILENAME${NC}"
+
+else #tar commmand didnt ran successfully (exit code != 0)
+  echo -e "$(date +"%Y/%m/%d %T") ${CN}Backup file generation failed.${NC}"
+  rm "$SAVE_FOLDER/$FILENAME"
+  exit 1
+fi
+
+if [ -n $RCLONE_FOLDER ]; then
+  echo "$(date +"%Y/%m/%d %T") Uploading backup file to $RCLONE_FOLDER"
+  rclone copy "$SAVE_FOLDER/$FILENAME" "$RCLONE_FOLDER"
+
+  if [ "$?" = 0 ]; then # rclone commmand ran successfully (exit code = 0)
+    echo -e "$(date +"%Y/%m/%d %T") ${CG}Backup file uploaded.${NC}"
+
+  else # rclone command didn't ran successfully (exit code != 0)
+    ERROR=true
+    echo -e "$(date +"%Y/%m/%d %T") ${CN}Upload failed.${NC}"
+
+    if [ "$REMOVE_LOCAL" = true ]; then
+      read -p "WARNING: Would you like to continute and remove local copy of the backup file even though upload wasn't successful (Y/n) ? " -n 1 -r
+      echo
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "$(date +"%Y/%m/%d %T") ${CN}Script finished with errors.${NC}"
+        exit 1
+      fi
+    fi
+  fi
+fi
+
+if [ "$REMOVE_LOCAL" = true ]; then
+  rm "$SAVE_FOLDER/$FILENAME"
+  echo -e "$(date +"%Y/%m/%d %T") ${CG}Local file removed.${NC}"
+fi
+
+if [ "$ERROR" = false ]; then
+  echo -e "$(date +"%Y/%m/%d %T") ${CG}Script ran successfully.${NC}"
+  exit 0;
+
+else
+  echo -e "$(date +"%Y/%m/%d %T") ${CN}Script ran with errors.${NC}"
+  exit 1
+fi
