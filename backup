@@ -16,9 +16,9 @@
 ##  Usage: backup [-n <name>] [-s <path>] [-u <path>] [-r] <path-to-backup>
 ##
 ##  Options:
-##    -n <name>  Sets the tar.gz file name [default: backup]
-##    -s <path>  The path to which the generated backup file will be saved to [default: current folder]
-##    -u <path>  The rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
+##    -n <name>  Sets the tar.gz file name [default: "backup"]
+##    -s <path>  Path to which the generated backup file will be saved to [default: current working directory]
+##    -u <path>  rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
 ##    -r         Remove local copy of backup file after it's been uploaded
 ##
 ##  Commands:
@@ -40,9 +40,11 @@ usage() { echo "Usage: $(basename $0) [-h] [-n <name>] [-s <path>] [-u <path>] [
 Use $(basename $0) -h for more info."; exit 1; }
 
 ERROR=false # sets to true when there's an error for final exit code
-NC='\033[0m' # ANSI - no color
-CG='\033[0;32m' # ANSI - green
-CN='\033[1;31m' # ANSI - red
+C0='\033[0m' # ANSI - no color
+C1='\033[0;32m' # ANSI - success - green
+C2='\033[1;31m' # ANSI - error - red
+C3='\033[0;36m' # ANSI - information - orange
+C4='\033[0;33m' # ANSI - variables/paths - cyan
 
 while getopts ":n:s:u:rh" arg; do
   case $arg in
@@ -61,9 +63,9 @@ while getopts ":n:s:u:rh" arg; do
     h)
       echo " Usage: $(basename $0) [-n <name>] [-s <path>] [-u <path>] [-r] <path-to-backup>
  Options:
-   -n <name>  Sets the tar.gz file name (date is added) [default: backup]
-   -s <path>  The path to which the generated backup file will be saved to [default: current working directory]
-   -u <path>  The rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
+   -n <name>  Sets the tar.gz file name (date is added) [default: "backup"]
+   -s <path>  Path to which the generated backup file will be saved to [default: current working directory]
+   -u <path>  rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
    -r         Remove local copy of backup file after it's been uploaded
 
  Commands:
@@ -80,17 +82,17 @@ while getopts ":n:s:u:rh" arg; do
   esac
 done
 
-if [[ -d ${@:$OPTIND:1} ]]; then BACKUP_FOLDER=${@:$OPTIND:1}; fi # positional argument - the folder that's going to be backed-up
+if [[ -n ${@:$OPTIND:1} ]]; then BACKUP_FOLDER=${@:$OPTIND:1}; fi # positional argument - the folder that's going to be backed-up
 
 if [ -z $BACKUP_FOLDER ]; then usage; fi # if no backup folder was chosen
 
 if [ ! -d $BACKUP_FOLDER ]; then # if BACKUP_FOLDER path doesn't exist
-  echo -e "${CN}Folder $BACKUP_FOLDER not found.${NC}"
+  echo -e "${C2}Folder ${C4}$BACKUP_FOLDER ${C2}not found${C0}"
   exit 1
 fi
 
 if [ ! -d $SAVE_FOLDER ]; then # if SAVE_FOLDER path doesn't exist
-  echo -e "${CN}Folder $SAVE_FOLDER not found.${NC}"
+  echo -e "${C2}Folder ${C4}$SAVE_FOLDER ${C2}not found${C0}"
   exit 1
 fi
 
@@ -106,35 +108,35 @@ if [ "$REMOVE_LOCAL" = true ] && [ -z $RCLONE_FOLDER ]; then # if REMOVE_LOCAL i
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then exit 0; fi
 fi
 
-echo "$(date +"%Y/%m/%d %T") Generating tar.gz file"
+echo -e "$(date +"%Y/%m/%d %T") ${C3}Generating tar.gz file"${C0}
 FILENAME="${BACKUP_NAME}-$(date +%FT%H%M).tar.gz"
 tar -czf "$SAVE_FOLDER/$FILENAME" -C "$BACKUP_FOLDER/.." "$(basename "$BACKUP_FOLDER")"
 
 if [ "$?" = 0 ]; then # tar commmand ran successfully (exit code = 0)
-  echo -e "$(date +"%Y/%m/%d %T") ${CG}Backup file generated successfully and saved to $SAVE_FOLDER/$FILENAME${NC}"
+  echo -e "$(date +"%Y/%m/%d %T") ${C1}Backup file generated and saved successfully to ${C4}$SAVE_FOLDER/$FILENAME ($(du -h "$SAVE_FOLDER/$FILENAME" | cut -f1))${C0}"
 
 else #tar commmand didnt ran successfully (exit code != 0)
-  echo -e "$(date +"%Y/%m/%d %T") ${CN}Backup file generation failed.${NC}"
+  echo -e "$(date +"%Y/%m/%d %T") ${C2}Backup file generation failed${C0}"
   rm "$SAVE_FOLDER/$FILENAME"
   exit 1
 fi
 
 if [ -n $RCLONE_FOLDER ]; then
-  echo "$(date +"%Y/%m/%d %T") Uploading backup file to $RCLONE_FOLDER"
+  echo -e "$(date +"%Y/%m/%d %T") ${C3}Uploading backup file to ${C4}$RCLONE_FOLDER${C0}"
   rclone copy "$SAVE_FOLDER/$FILENAME" "$RCLONE_FOLDER"
 
   if [ "$?" = 0 ]; then # rclone commmand ran successfully (exit code = 0)
-    echo -e "$(date +"%Y/%m/%d %T") ${CG}Backup file uploaded.${NC}"
+    echo -e "$(date +"%Y/%m/%d %T") ${C1}Backup file uploaded successfully to ${C4}$RCLONE_FOLDER${C0}"
 
   else # rclone command didn't ran successfully (exit code != 0)
     ERROR=true
-    echo -e "$(date +"%Y/%m/%d %T") ${CN}Upload failed.${NC}"
+    echo -e "$(date +"%Y/%m/%d %T") ${C2}Upload failed${C0}"
 
     if [ "$REMOVE_LOCAL" = true ]; then
       read -p "WARNING: Would you like to continute and remove local copy of the backup file even though upload wasn't successful (Y/n) ? " -n 1 -r
       echo
       if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "$(date +"%Y/%m/%d %T") ${CN}Script finished with errors.${NC}"
+        echo -e "$(date +"%Y/%m/%d %T") ${C2}Script finished with errors${C0}"
         exit 1
       fi
     fi
@@ -143,14 +145,14 @@ fi
 
 if [ "$REMOVE_LOCAL" = true ]; then
   rm "$SAVE_FOLDER/$FILENAME"
-  echo -e "$(date +"%Y/%m/%d %T") ${CG}Local file removed.${NC}"
+  echo -e "$(date +"%Y/%m/%d %T") ${C1}Local file removed${C0}"
 fi
 
 if [ "$ERROR" = false ]; then
-  echo -e "$(date +"%Y/%m/%d %T") ${CG}Script ran successfully.${NC}"
+  echo -e "$(date +"%Y/%m/%d %T") ${C1}Script finished successfully${C0}"
   exit 0;
 
 else
-  echo -e "$(date +"%Y/%m/%d %T") ${CN}Script ran with errors.${NC}"
+  echo -e "$(date +"%Y/%m/%d %T") ${C2}Script finished with errors${C0}"
   exit 1
 fi
