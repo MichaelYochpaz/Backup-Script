@@ -21,7 +21,7 @@
 ##    -e <pattern>  Exclude a pattern (specific files / folders) from being backed up
 ##    -u <path>     rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
 ##    -r            Removes local copy of backup file after it's been uploaded
-##    -v            Runs tar and rclone using the '-v' option
+##    -v            Uses the '-v' option when running tar and rclone
 ##
 ##  Commands:
 ##    -h            Displays this help and exists.
@@ -79,7 +79,7 @@ while getopts ":n:e:s:u:rvh" arg; do
    -e <pattern>  Exclude a pattern (specific files / folders) from being backed up
    -u <path>     rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
    -r            Removes local copy of backup file after it's been uploaded
-   -v            Runs tar and rclone using the '-v' option
+   -v            Uses the '-v' option when running tar and rclone
 
  Commands:
    -h            Displays this help and exists.
