@@ -6,34 +6,35 @@ A Bash script to generate a tar.gz backup file of a folder, with an option to au
 
 List of cloud/storage providers currently supported by rclone can be found [here](https://github.com/rclone/rclone#storage-providers).
 
+Last released version: 1.1.0 ([Changelog](https://github.com/MichaelYochpaz/Backup-Script/blob/master/changelog.md))
 ## Requirements
-* `tar`
-* `rclone` (needs to be configured)
+* `rclone` configured with at least one remote (only if you plan to use the upload feature)
 
 ## Usage
 Configuration can be set on the script itself, under the "Configuration" section, to run the script without any argument,  
 or using command-line arguments (which will override configuration set on on the script).
 ```
-Usage: backup [-n <name>] [-s <path>] [-u <path>] [-r] <path-to-backup>
+ Usage: backup [-n <name>] [-s <path>] [-e <pattern>]... [-u <path>] [-r] [-v] <path-to-backup>
 
-Options:
-  -n <name>  Sets the tar.gz file name [default: "backup"]
-  -s <path>  Path to which the generated backup file will be saved to [default: current working directory]
-  -u <path>  rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
-  -r         Remove local copy of backup file after it's been uploaded
+ Options:
+   -n <name>     Sets the tar.gz file name [default: "backup"]
+   -s <path>     Path to which the generated backup file will be saved to [default: current working directory]
+   -e <pattern>  Exclude a pattern (specific files / folders) from being backed up
+   -u <path>     rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
+   -r            Removes local copy of backup file after it's been uploaded
+   -v            Uses the '-v' option when running tar and rclone
 
-Commands:
-  -h         Displays this help and exists.
+ Commands:
+   -h            Displays this help and exists.
 
-Examples:
-  backup "/home/user/important_stuff"
-  backup -n "important-stuff-backup" -s "/home/user/backups" -u "GDrive:/Backups" -r "/home/user/important_stuff/"
+ Examples:
+ backup "/home/user/important_stuff"
+ backup -u "GDrive:/Backups" -r "/home/user/important_stuff/"
+ backup -n "important-stuff-backup" -s "/home/user/backups" -e "*.pdf" -e "important_stuff/dont_backup_this_folder" "/home/user/important_stuff/"
 ```
 
 ## To Do
-* Add an option to restore a backup.
-* Add an option to customize date format on backup's file name.
-* Add an option to exclude files from backup using `tar`'s `--exclude=` argument.
-* Add '-v' option to show `tar` and `rclone` outputs.
-* Add '-l' option to save a log file.
-* Add a scheduled backups setup guide using `cron` and `systemd` to *README.md*.
+- [ ] Add an option to restore a backup through the script
+- [ ] Add an option to customize date format on backup's file name.
+- [ ] Add '-l' option to save a log file.
+- [ ] Add a scheduled backups setup guide using `cron` and `systemd` to *README*.
