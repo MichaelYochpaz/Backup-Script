@@ -28,8 +28,8 @@
 ##
 ##  Examples:
 ##    backup "/home/user/important_stuff"
-##    
-##    backup -n \"important-stuff-backup\" -s \"/home/user/backups\" -e \"*.pdf\" -e \"important_stuff/dont_backup_this_folder\" \"/home/user/important_stuff/\""
+##    backup -u "GDrive:/Backups" -r "/home/user/important_stuff/"
+##    backup -n "important-stuff-backup" -s "/home/user/backups" -e "*.pdf" -e "important_stuff/dont_backup_this_folder" "/home/user/important_stuff/"
 ##
 ## --------- Configuration ------------
 BACKUP_NAME="backup" # backup file name. date will be added to file name after this string
