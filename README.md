@@ -37,5 +37,5 @@ or using command-line arguments (which will override configuration set on on the
 - [ ] Add an option to restore a backup through the script
 - [ ] Add an option to customize date format on backup's file name.
 - [ ] Add '-l' option to save a log file.
-- [ ] Add option to send Pushbullet notification once backup is done.
+- [ ] Add an option to send Pushbullet notification once backup is done.
 - [ ] Add a scheduled backups setup guide using `cron` and `systemd` to *README*.
