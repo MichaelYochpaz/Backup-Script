@@ -6,7 +6,7 @@ A Bash script to generate a tar.gz backup file of a folder, with an option to au
 
 List of cloud/storage providers currently supported by rclone can be found [here](https://github.com/rclone/rclone#storage-providers).
 
-Last released version: 1.1.0 ([Changelog](https://github.com/MichaelYochpaz/Backup-Script/blob/master/changelog.md))
+Last released version: 1.1.1 ([Changelog](https://github.com/MichaelYochpaz/Backup-Script/blob/master/changelog.md))
 ## Requirements
 * `rclone` configured with at least one remote (only if you plan to use the upload feature)
 
