@@ -2,7 +2,7 @@
 ## ------------------------------------
 ##  Made By: Michael Yochpaz (C) 2020
 ##  https://github.com/MichaelYochpaz/Backup-Script
-##  Version: 1.1.0
+##  Version: 1.1.1
 ##  License: GPLv3
 ## ------------------------------------
 ## -------------- Usage ---------------
@@ -38,7 +38,7 @@ EXCLUDES=() # array to store exclusion patterns. example: ("*.mkv" "*.pdf" "/hom
 SAVE_FOLDER="$PWD" # folder to save backup file to (full path)
 RCLONE_FOLDER="" # path to rclone folder to which file will be uploaded to. leave empty to skip upload
 REMOVE_LOCAL=false # remove local backup file after upload
-VERBOSE=false # print extra information and use -v option on tar & rclone
+VERBOSE=false # use the '-v' option when running tar and rclone
 ## ------------------------------------
 
 usage() { echo "Usage: $(basename $0) [-h] [-n <name>] [-s <path>] [-u <path>] [-r] <path>
@@ -136,14 +136,15 @@ if [ ! ${#EXCLUDES[@]} -eq 0 ]; then printf "%s\n" "${EXCLUDES[@]}" > "$EXCLUEDS
 if [ "$VERBOSE" = true ]; then tar -cvzf "$SAVE_FOLDER/$FILENAME" -C "$BACKUP_FOLDER/.." -X $EXCLUEDS_FILE "$(basename "$BACKUP_FOLDER")"; \
 else tar -czf "$SAVE_FOLDER/$FILENAME" -C "$BACKUP_FOLDER/.." -X $EXCLUEDS_FILE "$(basename "$BACKUP_FOLDER")"; fi
 
+# remove temporary file
+rm $EXCLUEDS_FILE
+
 # tar commmand ran successfully (exit code = 0)
 if [ "$?" = 0 ]; then
   echo -e "$(date +"%Y/%m/%d %T") ${C1}Backup file generated and saved successfully to ${C4}$SAVE_FOLDER/$FILENAME ($(du -h "$SAVE_FOLDER/$FILENAME" | cut -f1))${C0}"
 # tar commmand didn't run successfully (exit code != 0)
 else 
   echo -e "$(date +"%Y/%m/%d %T") ${C2}Backup file generation failed${C0}"
-# remove temporary file
-rm $EXCLUEDS_FILE
 # if tar file was generated during the failed tar process, remove it
   if [ -f "$SAVE_FOLDER/$FILENAME" ]; then
     rm "$SAVE_FOLDER/$FILENAME"
