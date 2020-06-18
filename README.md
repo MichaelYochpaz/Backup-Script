@@ -48,7 +48,7 @@ or using command-line arguments (which will override configuration set on on the
 
 ## FAQ
 **Q:** Why use `tar` and not `gzip` for backups?  
-**A:** The tar format can store symlinks and file permissions and, whereas the zip format, can't.
+**A:** The tar format can store symlinks and file permissions, whereas the zip format, can't.
 
 **Q:** I have a Pushbullet account. Where do I find my API key?  
 **A:** Go to your Pushbullet account's [settings page](https://www.pushbullet.com/#settings/account), and click the "Create Access Token" button.
