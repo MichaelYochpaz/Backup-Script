@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to the script will be documented here.
 
+## 1.2.0 - [2020-06-18] 
+* Added Pushbullet notifications support using the `-p` argument.
+* Added `-y` argument to skip warnings (which by default, require user input to continue)
+
 ## 1.1.1 - [2020-06-17] 
 * A small fix to temporary file cleanup
 
