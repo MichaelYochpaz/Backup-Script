@@ -6,9 +6,20 @@ A Bash script to generate a tar.gz backup file of a folder, with an option to au
 
 List of cloud/storage providers currently supported by rclone can be found [here](https://github.com/rclone/rclone#storage-providers).
 
-Last released version: 1.1.1 ([Changelog](https://github.com/MichaelYochpaz/Backup-Script/blob/master/changelog.md))
-## Requirements
-* `rclone` configured with at least one remote (only if you plan to use the upload feature)
+Latest version: 1.2.0 ([changelog](https://github.com/MichaelYochpaz/Backup-Script/blob/master/changelog.md))
+## Features
+* Generate a tar.gz backup file of a folder
+* Exclude specific folders / patterns
+* Automatic upload of backup file to a cloud service using rclone
+* Automatic removal of local backup file once upload is finished
+* Pushbullet notifications  
+
+
+
+##  Requirements
+### Optional
+* `rclone` , configured with at least one remote (only if you plan to use the upload option)
+* A [Pushbullet](https://www.pushbullet.com/) account (only if you want to use the Pushbullet notifications option)
 
 ## Usage
 Configuration can be set on the script itself, under the "Configuration" section, to run the script without any argument,  
@@ -21,21 +32,26 @@ or using command-line arguments (which will override configuration set on on the
    -s <path>     Path to which the generated backup file will be saved to [default: current working directory]
    -e <pattern>  Exclude a pattern (specific files / folders) from being backed up
    -u <path>     rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
+   -p <API key>  Sends a Pushbullet notification once backup is done to the given API key
    -r            Removes local copy of backup file after it's been uploaded
-   -v            Uses the '-v' option when running tar and rclone
+   -y            Skip warnings (by default, warnings require user input to contine)
+   -v            Uses '-v' option when running tar and rclone
 
  Commands:
    -h            Displays this help and exists.
 
  Examples:
  backup "/home/user/important_stuff"
- backup -u "GDrive:/Backups" -r "/home/user/important_stuff/"
+ backup -u "GDrive:/Backups" -r -y -p "XXXXXXXXXXXXXXXX" "/home/user/important_stuff/" 
  backup -n "important-stuff-backup" -s "/home/user/backups" -e "*.pdf" -e "important_stuff/dont_backup_this_folder" "/home/user/important_stuff/"
 ```
 
-## To Do
-- [ ] Add an option to restore a backup through the script
-- [ ] Add an option to customize date format on backup's file name.
-- [ ] Add '-l' option to save a log file.
-- [ ] Add an option to send Pushbullet notification once backup is done.
-- [ ] Add a scheduled backups setup guide using `cron` and `systemd` to *README*.
+## FAQ
+**Q:** Why use `tar` and not `gzip` for backups?  
+**A:** The tar format can store symlinks and file permissions and, whereas the zip format, can't.
+
+**Q:** I have a Pushbullet account. Where do I find my API key?  
+**A:** Go to your Pushbullet account's [settings page](https://www.pushbullet.com/#settings/account), and click the "Create Access Token" button.
+
+**Q:** I found a bug, or have an idea for a feature. What do I do?  
+**A:** Feel free to open a [issue](https://github.com/MichaelYochpaz/Backup-Script/issues) with bugs / suggestions / improvments.
