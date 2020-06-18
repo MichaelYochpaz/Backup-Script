@@ -18,8 +18,8 @@ Latest version: 1.2.0 ([changelog](https://github.com/MichaelYochpaz/Backup-Scri
 
 ##  Requirements
 ### Optional
-* `rclone` , configured with at least one remote (only if you plan to use the upload option)
-* A [Pushbullet](https://www.pushbullet.com/) account (only if you want to use the Pushbullet notifications option)
+* `rclone` , configured with at least one remote (for using the upload feature)
+* A [Pushbullet](https://www.pushbullet.com/) account (for receiving Pushbullet notifications)
 
 ## Usage
 Configuration can be set on the script itself, under the "Configuration" section, to run the script without any argument,  
