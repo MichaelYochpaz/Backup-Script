@@ -36,13 +36,13 @@
 ## --------- Configuration ------------
 BACKUP_NAME="backup" # backup file name. date will be added to file name after this string
 BACKUP_FOLDER="" # folder to backup (full path)
-EXCLUDES=() # array to store exclusion patterns. example: ("*.mkv" "*.pdf" "/home/user/important_stuff/no_backup_folder")
+EXCLUDES=() # array to store exclusion patterns. example: ("*.mkv" "*.pdf" "important_stuff/dont_backup_this_folder")
 SAVE_FOLDER="$PWD" # folder to save backup file to (full path)
-RCLONE_FOLDER="" # path to rclone folder to which file will be uploaded to. leave empty to skip upload
-PUSHBULLET_API_KEY="" # Pusbullet API key for sending a notification once backup is done
+RCLONE_FOLDER="" # path to rclone folder to which backup file will be uploaded to. leave empty to skip the upload process
+PUSHBULLET_API_KEY="" # Pusbullet API key for Pushbullet notifications
 REMOVE_LOCAL=false # remove local backup file after upload
-SKIP_WARNINGS=false # skip warnings that require user input to continue
-VERBOSE=false # use the '-v' option when running tar and rclone
+SKIP_WARNINGS=false # skip warnings (warnings require user input to continue)
+VERBOSE=false # use verbose when running tar and rclone
 PUSHBULLET_TITLE="Backup Script" # Pusbullet - notification title
 PUSHBULLET_MESSAGE_START="Backup script " # Pushbullet - notification messages will start with this string, followed by one of the followings
 PUSHBULLET_MESSAGE_FINISHED_SUCCESS="finished successfully." # Pusbullet - message will be shown if script finished successfully
@@ -53,11 +53,11 @@ PUSHBULLET_MESSAGE_FAIL="failed." # Pusbullet - message will be shown if script 
 usage() { echo "Usage: $(basename $0) [-n <name>] [-s <path>] [-e <pattern>]... [-u <path>] [-p <API key>] [-r] [-y] [-v] <path-to-backup>
 Use $(basename $0) -h for additional info."; exit 1; }
 
+# if there is a Pushbullet API key, send a Pushbullet notification. uses a parameter for message's body
 pushbullet() { if [ -n "$PUSHBULLET_API_KEY" ]; then curl -u "$PUSHBULLET_API_KEY": https://api.pushbullet.com/v2/pushes -d type=note -d \
  title="$PUSHBULLET_TITLE" -d body="$PUSHBULLET_MESSAGE_START$1 " >/dev/null 2>&1; fi }
 
-
-ERROR=false # sets to true when there's an error for final exit code
+ERROR=false # sets to true if there's an error. used for final exit code of the script
 C0='\033[0m' # ANSI - no color
 C1='\033[0;32m' # ANSI - success - green
 C2='\033[1;31m' # ANSI - error - red
@@ -168,7 +168,7 @@ if [ "$?" = 0 ]; then
 # tar commmand didn't run successfully (exit code != 0)
 else 
   echo -e "$(date +"%Y/%m/%d %T") ${C2}Backup file generation failed${C0}"
-# if tar file was generated during the failed tar process, remove it
+# if a file was generated during the (failed) tar process, remove it
   if [ -f "$SAVE_FOLDER/$FILENAME" ]; then rm "$SAVE_FOLDER/$FILENAME"; fi
   pushbullet "$PUSHBULLET_MESSAGE_FAIL"
   exit 1
@@ -206,13 +206,11 @@ fi
 # print, send Pushbullet notification (if used), and exit using correct code according to ERROR's value
 if [ "$ERROR" = false ]; then
   echo -e "$(date +"%Y/%m/%d %T") ${C1}Script finished successfully${C0}"
-  # send Pushbullet notification, if used
   pushbullet "$PUSHBULLET_MESSAGE_FINISHED_SUCCESS"
   exit 0;
 
 else
   echo -e "$(date +"%Y/%m/%d %T") ${C2}Script finished with errors${C0}"
-  # send Pushbullet notification, if used
   pushbullet "$PUSHBULLET_MESSAGE_FINISHED_ERRORS"
   exit 1
 fi
