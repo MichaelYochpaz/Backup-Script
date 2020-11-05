@@ -54,4 +54,4 @@ or using command-line arguments (which will override configuration set on on the
 **A:** Go to your Pushbullet account's [settings page](https://www.pushbullet.com/#settings/account), and click the "Create Access Token" button.
 
 **Q:** I found a bug, or have an idea for a feature. How can I help?  
-**A:** Feel free to open a [issue](https://github.com/MichaelYochpaz/Backup-Script/issues) with bugs / suggestions / improvments.
+**A:** Feel free to open an [issue](https://github.com/MichaelYochpaz/Backup-Script/issues) with bug reports and suggestions.
