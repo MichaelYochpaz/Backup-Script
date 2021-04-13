@@ -2,7 +2,7 @@
 ## ------------------------------------
 ##  Made By: Michael Yochpaz (C) 2020
 ##  https://github.com/MichaelYochpaz/Backup-Script
-##  Version: 1.2
+##  Version: 1.2.0
 ##  License: GPLv3
 ## ------------------------------------
 ## -------------- Usage ---------------
@@ -20,13 +20,13 @@
 ##    -s <path>     Path to which the generated backup file will be saved to [default: current working directory]
 ##    -e <pattern>  Exclude a pattern (specific files / folders) from being backed up
 ##    -u <path>     rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
-##    -p <API key>  Sends a Pushbullet notification once backup is done to the given API key
+##    -p <API key>  Sends a Pushbullet notification once backup is done
 ##    -r            Removes local copy of backup file after it's been uploaded
-##    -y            Skip warnings (by default, warnings require user input to contine)
+##    -y            Skip warnings (Warnings require user input to continue by default)
 ##    -v            Uses '-v' option when running tar and rclone
 ##
 ##  Commands:
-##    -h            Displays this help and exists.
+##    -h            Displays this help message and exists.
 ##
 ##  Examples:
 ##    backup "/home/user/important_stuff"
@@ -34,20 +34,20 @@
 ##    backup -n "important-stuff-backup" -s "/home/user/backups" -e "*.pdf" -e "important_stuff/dont_backup_this_folder" "/home/user/important_stuff/"
 ##
 ## --------- Configuration ------------
-BACKUP_NAME="backup" # backup file name. date will be added to file name after this string
-BACKUP_FOLDER="" # folder to backup (full path)
-EXCLUDES=() # array to store exclusion patterns. example: ("*.mkv" "*.pdf" "important_stuff/dont_backup_this_folder")
-SAVE_FOLDER="$PWD" # folder to save backup file to (full path)
-RCLONE_FOLDER="" # path to rclone folder to which backup file will be uploaded to. leave empty to skip the upload process
-PUSHBULLET_API_KEY="" # Pusbullet API key for Pushbullet notifications
-REMOVE_LOCAL=false # remove local backup file after upload
-SKIP_WARNINGS=false # skip warnings (warnings require user input to continue)
-VERBOSE=false # use verbose when running tar and rclone
-PUSHBULLET_TITLE="Backup Script" # Pusbullet - notification title
-PUSHBULLET_MESSAGE_START="Backup script " # Pushbullet - notification messages will start with this string, followed by one of the followings
-PUSHBULLET_MESSAGE_FINISHED_SUCCESS="finished successfully." # Pusbullet - message will be shown if script finished successfully
-PUSHBULLET_MESSAGE_FINISHED_ERRORS="finished with errors." # Pusbullet - message will be shown if script finished with errors
-PUSHBULLET_MESSAGE_FAIL="failed." # Pusbullet - message will be shown if script failed
+BACKUP_NAME="backup" # Backup file name. date will be added to file name after this string.
+BACKUP_FOLDER="" # Folder to backup (full path).
+EXCLUDES=() # Exclusion patterns array. Usage example: ("*.mkv" "*.pdf" "important_stuff/dont_backup_this_folder")
+SAVE_FOLDER="$PWD" # Folder to save backup file to (full path)
+RCLONE_FOLDER="" # rclone folder path to upload backup file to. Leave empty to skip the upload process.
+PUSHBULLET_API_KEY="" # Pusbullet API key for notifications.
+REMOVE_LOCAL=false # Boolean - Remove local backup file after upload.
+SKIP_WARNINGS=false # Boolean - Skip warnings.
+VERBOSE=false # Boolean - Use verbose mode when running tar and rclone.
+PUSHBULLET_TITLE="Backup Script" # Pusbullet - Notification title.
+PUSHBULLET_MESSAGE_START="Backup script " # Pushbullet - Notification messages will start with this string, followed by one of the followings:
+PUSHBULLET_MESSAGE_FINISHED_SUCCESS="finished successfully." # Pusbullet - Message will be shown if the script ran successfully.
+PUSHBULLET_MESSAGE_FINISHED_ERRORS="finished with errors." # Pusbullet - Message will be shown if the script finished with errors.
+PUSHBULLET_MESSAGE_FAIL="failed." # Pusbullet - Message will be shown if the script has failed.
 ## ------------------------------------
 
 usage() { echo "Usage: $(basename $0) [-n <name>] [-s <path>] [-e <pattern>]... [-u <path>] [-p <API key>] [-r] [-y] [-v] <path-to-backup>
@@ -57,7 +57,8 @@ Use $(basename $0) -h for additional info."; exit 1; }
 pushbullet() { if [ -n "$PUSHBULLET_API_KEY" ]; then curl -u "$PUSHBULLET_API_KEY": https://api.pushbullet.com/v2/pushes -d type=note -d \
  title="$PUSHBULLET_TITLE" -d body="$PUSHBULLET_MESSAGE_START$1 " >/dev/null 2>&1; fi }
 
-ERROR=false # sets to true if there's an error. used for final exit code of the script
+ERROR=false # sets to true if there's an error. used for final exit code of the script.
+
 C0='\033[0m' # ANSI - no color
 C1='\033[0;32m' # ANSI - success - green
 C2='\033[1;31m' # ANSI - error - red
@@ -93,17 +94,17 @@ while getopts ":n:e:s:u:p:ryvh" arg; do
     h)
       echo " Usage: $(basename $0) [-n <name>] [-s <path>] [-e <pattern>]... [-u <path>] [-p <API key>] [-r] [-y] [-v] <path-to-backup>
  Options:
-   -n <name>     Sets the tar.gz file name (date is added) [default: "backup"]
+   -n <name>     Sets the tar.gz file name [default: "backup"]
    -s <path>     Path to which the generated backup file will be saved to [default: current working directory]
    -e <pattern>  Exclude a pattern (specific files / folders) from being backed up
    -u <path>     rclone path to which the backup file will be uploaded to (not providing one will skip the upload process)
-   -p <API key>  Sends a Pushbullet notification once backup is done to the given API key
+   -p <API key>  Sends a Pushbullet notification once backup is done
    -r            Removes local copy of backup file after it's been uploaded
-   -y            Skip warnings (by default, warnings require user input to contine)
+   -y            Skip warnings (Warnings require user input to continue by default)
    -v            Uses '-v' option when running tar and rclone
 
  Commands:
-   -h            Displays this help and exists.
+   -h            Displays this help message and exists.
 
  Examples:
    $(basename $0) \"/home/user/important_stuff\"
